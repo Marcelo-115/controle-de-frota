@@ -1,197 +1,229 @@
-# Sistema de Gestão de Frota — Máquinas Pesadas
+# 🚜 Sistema de Gestão de Frota
 
-Sistema web completo para gestão de frota com controle de abastecimentos, manutenções, operadores e relatórios.
+Sistema web para controle de consumo de combustível, manutenção e custos de máquinas pesadas.
+
+---
+
+## O que o sistema faz
+
+- Controle de abastecimento com cálculo automático de média L/h
+- Dashboard comparativo de todas as máquinas
+- Controle de manutenções preventivas e corretivas com alertas por horímetro
+- Controle de operadores e horas por pessoa
+- Módulo financeiro (aluguel, peças, mão de obra)
+- Exportação de relatórios em PDF e Excel
+- 4 perfis de acesso: Admin, Mecânico, Gerente e Diretoria
 
 ---
 
 ## Stack
 
-- **Backend:** Python 3.11 · FastAPI · SQLAlchemy async · Alembic
-- **Frontend:** React 18 · Vite · TailwindCSS · TanStack Query
-- **Banco:** PostgreSQL via Supabase (ou Docker local)
-- **Auth:** JWT com refresh token
+| Camada | Tecnologia |
+|---|---|
+| Backend | Python 3.11 + FastAPI |
+| Frontend | React 18 + Vite + TailwindCSS |
+| Banco de dados | PostgreSQL (Supabase) |
+| Hospedagem | Railway |
+| Auth | JWT com refresh token |
 
 ---
 
-## 1. Configurar o Supabase
+## Pré-requisitos
 
-1. Acesse [supabase.com](https://supabase.com) e crie um projeto
-2. Vá em **Project Settings → Database**
-3. Copie a **Connection String** no modo **URI** (use o campo "Connection pooling" com porta 6543 para produção, ou a porta 5432 direto para dev)
-4. A connection string tem o formato:
-   ```
-   postgresql://postgres.xxxxx:SENHA@aws-0-sa-east-1.pooler.supabase.com:6543/postgres
-   ```
-5. Para o backend async, troque `postgresql://` por `postgresql+asyncpg://`
+- [Node.js 18+](https://nodejs.org)
+- [Python 3.11+](https://python.org)
+- [Git](https://git-scm.com)
+- Conta no [GitHub](https://github.com)
+- Conta no [Railway](https://railway.app)
+- Projeto criado no [Supabase](https://supabase.com) ✅ (já criado)
 
 ---
 
-## 2. Configurar variáveis de ambiente
+## Como rodar localmente
+
+### 1. Configurar o backend
 
 ```bash
 cd backend
-copy .env.example .env
-```
-
-Edite `.env` com sua connection string do Supabase:
-
-```env
-DATABASE_URL=postgresql+asyncpg://postgres.xxxxx:SENHA@host:5432/postgres
-SECRET_KEY=gere_uma_chave_segura_aqui
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=15
-REFRESH_TOKEN_EXPIRE_DAYS=7
-ENVIRONMENT=development
-ALLOWED_ORIGINS=["http://localhost:5173"]
-```
-
-> **Gerar SECRET_KEY segura:**
-> ```bash
-> python -c "import secrets; print(secrets.token_hex(32))"
-> ```
-
----
-
-## 3. Configurar o backend
-
-```bash
-cd backend
-
-# Criar ambiente virtual
 python -m venv venv
 
-# Ativar (Windows)
+# Windows
 venv\Scripts\activate
 
-# Instalar dependências
+# Mac/Linux
+source venv/bin/activate
+
 pip install -r requirements.txt
 ```
 
-> **Nota sobre WeasyPrint no Windows:** pode exigir GTK. Se tiver problemas, instale o
-> [GTK Runtime for Windows](https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer).
-> A exportação Excel funciona sem ele.
-
----
-
-## 4. Rodar as migrations
-
+Copie o arquivo de configuração:
 ```bash
-cd backend
+cp .env.example .env
+```
+
+Edite o `.env` com sua connection string do Supabase.
+
+Rode as migrations (cria as tabelas no banco):
+```bash
 alembic upgrade head
 ```
 
----
-
-## 5. Popular o banco com dados iniciais
-
+Insira os dados iniciais:
 ```bash
-cd backend
 python seed.py
 ```
 
-Isso cria:
-- **Admin:** admin@frota.com / Admin@123
-- **Mecânico:** mecanico@frota.com / Mec@123
-- **Gerente:** gerente@frota.com / Ger@123
-- 3 máquinas com seus abastecimentos históricos
-
----
-
-## 6. Rodar o backend
-
+Inicie o backend:
 ```bash
-cd backend
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+uvicorn main:app --reload
 ```
 
-API disponível em: http://localhost:8000  
-Documentação automática: http://localhost:8000/docs
+Backend rodando em: http://localhost:8000
+Documentação da API: http://localhost:8000/docs
 
----
-
-## 7. Rodar o frontend
+### 2. Configurar o frontend
 
 ```bash
 cd frontend
-
-# Instalar dependências
 npm install
-
-# Rodar em modo dev
 npm run dev
 ```
 
-Frontend disponível em: http://localhost:5173
+Frontend rodando em: http://localhost:5173
+
+### 3. Acessar o sistema
+
+| Perfil | Email | Senha |
+|---|---|---|
+| Admin | admin@frota.com | Admin@123 |
+| Mecânico | mecanico@frota.com | Mec@123 |
+| Gerente | gerente@frota.com | Ger@123 |
+| Diretoria | diretoria@frota.com | Dir@123 |
+
+> ⚠️ Troque as senhas após o primeiro acesso.
 
 ---
 
-## 8. Opção: banco local com Docker
+## Deploy no Railway (passo a passo)
 
-Se preferir rodar sem Supabase localmente:
+### 1. Subir o código no GitHub
+
+Na pasta raiz do projeto:
 
 ```bash
-# Na raiz do projeto
-docker compose up -d
-
-# Configure o .env com:
-DATABASE_URL=postgresql+asyncpg://frota:frota123@localhost:5432/frota_db
+git init
+git add .
+git commit -m "sistema de frota v1"
 ```
 
----
-
-## 9. Deploy do frontend no Vercel
+Crie um repositório no [github.com](https://github.com/new) chamado `sistema-frota` e execute:
 
 ```bash
-cd frontend
-npm run build
+git remote add origin https://github.com/SEU_USUARIO/sistema-frota.git
+git branch -M main
+git push -u origin main
 ```
 
-Ou conecte o repositório diretamente no [vercel.com](https://vercel.com):
+### 2. Criar o projeto no Railway
 
-1. Importe o repositório
-2. Defina o **Root Directory** como `frontend`
-3. Adicione variável de ambiente:
-   ```
-   VITE_API_URL=https://seu-backend.fly.dev/api/v1
-   ```
+1. Acesse [railway.app](https://railway.app) e entre com o GitHub
+2. Clique em **New Project → Deploy from GitHub repo**
+3. Selecione o repositório `sistema-frota`
+4. O Railway detecta automaticamente o Python e o Node.js
+
+### 3. Configurar o serviço do backend
+
+No painel do Railway, selecione o serviço do backend e vá em **Variables**. Adicione:
+
+```
+DATABASE_URL        = (sua connection string do Supabase)
+SECRET_KEY          = (chave secreta longa e aleatória)
+ALGORITHM           = HS256
+ACCESS_TOKEN_EXPIRE_MINUTES = 15
+REFRESH_TOKEN_EXPIRE_DAYS   = 7
+ENVIRONMENT         = production
+ALLOWED_ORIGINS     = ["https://SEU_FRONTEND.up.railway.app"]
+```
+
+### 4. Configurar o serviço do frontend
+
+No serviço do frontend, adicione:
+
+```
+VITE_API_URL = https://SEU_BACKEND.up.railway.app
+```
+
+### 5. Pronto
+
+O Railway gera URLs públicas para cada serviço. Compartilhe o link do frontend com sua equipe — ninguém precisa instalar nada.
 
 ---
 
-## 10. Deploy do backend em produção
+## Estrutura do projeto
 
-Recomendamos [Railway](https://railway.app) ou [Fly.io](https://fly.io):
-
-```bash
-# Fly.io
-fly launch
-fly secrets set DATABASE_URL="postgresql+asyncpg://..."
-fly secrets set SECRET_KEY="..."
-fly deploy
 ```
-
-No `.env` de produção, altere:
-```env
-ENVIRONMENT=production
-ALLOWED_ORIGINS=["https://seu-frontend.vercel.app"]
+frota-system/
+  backend/
+    app/
+      api/v1/routes/     — rotas da API
+      core/              — configurações, segurança, banco
+      models/            — tabelas do banco (SQLAlchemy)
+      schemas/           — validação de dados (Pydantic)
+      services/          — regras de negócio
+    migrations/          — Alembic
+    main.py
+    seed.py              — dados iniciais
+    requirements.txt
+    .env.example
+  frontend/
+    src/
+      components/        — componentes reutilizáveis
+      pages/             — telas do sistema
+      hooks/             — React Query hooks
+      services/          — chamadas à API
+    package.json
+  .gitignore
+  README.md
 ```
 
 ---
 
-## Perfis de acesso
+## Tabelas do banco de dados
 
-| Perfil      | Dashboard | Máquinas | Abastec. | Manutenções | Relatórios | Usuários |
-|-------------|-----------|----------|----------|-------------|------------|----------|
-| Admin       | ✅        | ✅ CRUD  | ✅ CRUD  | ✅ CRUD     | ✅         | ✅       |
-| Mecânico    | ✅        | ✅ Read  | ✅ próprios | ✅ próprias | ❌      | ❌       |
-| Gerente     | ✅        | ✅ CRUD  | ✅ Read  | ✅ Read     | ✅         | ❌       |
-| Diretoria   | ✅        | ✅ Read  | ❌       | ❌          | ✅         | ❌       |
+| Tabela | O que armazena |
+|---|---|
+| usuarios | Contas de acesso com perfil |
+| maquinas | Cadastro de equipamentos |
+| abastecimentos | Registros com cálculo automático de horas e média L/h |
+| manutencoes | Histórico e agenda de manutenções |
+| operadores | Cadastro de operadores |
+| operador_maquina | Horas trabalhadas por operador em cada máquina |
+| custos | Custos financeiros por máquina |
 
 ---
 
-## Status de consumo (L/h)
+## Máquinas já cadastradas
 
-| Status    | Média       | Cor    |
-|-----------|-------------|--------|
-| Econômico | < 3.0 L/h   | 🟢 Verde |
-| Normal    | 3.0–4.0 L/h | 🟡 Amarelo |
-| Alto      | > 4.0 L/h   | 🔴 Vermelho |
+| Máquina | Tipo | Horímetro atual | Última média |
+|---|---|---|---|
+| Trator Samambaia | Trator | 16,7h | 3,64 L/h |
+| Trator Vicente Pires | Trator | 12,2h | 3,04 L/h |
+| Bob Cat (Alugada) | Bob Cat | 7.301,0h | 3,62 L/h |
+
+---
+
+## Custo mensal estimado
+
+| Serviço | Custo |
+|---|---|
+| Railway (backend + frontend) | ~R$ 25–50/mês |
+| Supabase (banco de dados) | R$ 0 (plano free) |
+| GitHub (código) | R$ 0 |
+| **Total** | **~R$ 25–50/mês** |
+
+---
+
+## Suporte
+
+Sistema desenvolvido com auxílio do Claude (Anthropic).
+Para dúvidas ou evoluções, use o Claude Code com o contexto deste projeto.
