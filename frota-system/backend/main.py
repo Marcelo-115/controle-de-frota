@@ -29,3 +29,4 @@ app.include_router(usuarios.router, prefix="/api/v1/usuarios", tags=["usuarios"]
 @app.get("/health")
 async def health_check():
     return {"status": "ok", "version": "1.0.0"}
+
