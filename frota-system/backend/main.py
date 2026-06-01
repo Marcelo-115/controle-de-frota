@@ -11,7 +11,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origins=settings.get_allowed_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -25,7 +25,6 @@ app.include_router(operadores.router, prefix="/api/v1/operadores", tags=["operad
 app.include_router(relatorios.router, prefix="/api/v1/relatorios", tags=["relatorios"])
 app.include_router(dashboard.router, prefix="/api/v1/dashboard", tags=["dashboard"])
 app.include_router(usuarios.router, prefix="/api/v1/usuarios", tags=["usuarios"])
-
 
 @app.get("/health")
 async def health_check():
